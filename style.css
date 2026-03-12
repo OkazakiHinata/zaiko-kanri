@@ -807,6 +807,116 @@ body {
 }
 
 
+/* ========== ページ切り替え ========== */
+.page.hidden {
+  display: none;
+}
+
+.page-title {
+  font-size: var(--font-xl);
+  font-weight: 700;
+  color: var(--color-gray-900);
+  margin-bottom: 20px;
+}
+
+.section-header {
+  padding: 14px 18px 0;
+}
+
+.section-title {
+  font-size: var(--font-base);
+  font-weight: 600;
+  color: var(--color-gray-700);
+}
+
+
+/* ========== ステータスバッジ ========== */
+.status-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 4px;
+  font-size: var(--font-sm);
+  font-weight: 500;
+}
+
+.status-ok {
+  background: var(--color-success-pale);
+  color: #065f46;
+}
+
+.status-low {
+  background: var(--color-warning-pale);
+  color: #92400e;
+}
+
+.status-out {
+  background: var(--color-danger-pale);
+  color: #991b1b;
+}
+
+
+/* ========== 発注アラート サマリー ========== */
+.alert-summary-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.alert-summary-card {
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  text-align: center;
+}
+
+.alert-summary-card.danger-card {
+  border-left: 4px solid var(--color-danger);
+}
+
+.alert-summary-card.warning-card {
+  border-left: 4px solid var(--color-warning);
+}
+
+.alert-summary-card.info-card {
+  border-left: 4px solid var(--color-info);
+}
+
+.alert-summary-number {
+  display: block;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-gray-900);
+  line-height: 1.2;
+}
+
+.alert-summary-label {
+  font-size: var(--font-sm);
+  color: var(--color-gray-500);
+}
+
+
+/* ========== 入出庫履歴 バッジ ========== */
+.type-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 4px;
+  font-size: var(--font-sm);
+  font-weight: 600;
+}
+
+.type-in {
+  background: var(--color-success-pale);
+  color: #065f46;
+}
+
+.type-out {
+  background: var(--color-danger-pale);
+  color: #991b1b;
+}
+
+
 /* ========== レスポンシブ ========== */
 @media (max-width: 900px) {
   .sidebar { display: none; }

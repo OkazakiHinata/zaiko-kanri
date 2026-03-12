@@ -42,65 +42,180 @@
     <!-- サイドバー -->
     <aside class="sidebar">
       <nav class="sidebar-nav">
-        <a class="sidebar-link active">ダッシュボード</a>
-        <a class="sidebar-link">在庫一覧</a>
-        <a class="sidebar-link">発注アラート</a>
-        <a class="sidebar-link">入出庫履歴</a>
+        <a class="sidebar-link active" data-page="dashboard">ダッシュボード</a>
+        <a class="sidebar-link" data-page="inventory">在庫一覧</a>
+        <a class="sidebar-link" data-page="alerts">発注アラート</a>
+        <a class="sidebar-link" data-page="history">入出庫履歴</a>
       </nav>
     </aside>
 
     <!-- メインコンテンツ -->
     <main class="main">
 
-      <!-- ダッシュボード：サマリーカード -->
-      <section class="summary-cards" id="summaryCards"></section>
+      <!-- ========== ダッシュボード ========== -->
+      <div class="page" id="page-dashboard">
+        <h2 class="page-title">ダッシュボード</h2>
+        <section class="summary-cards" id="summaryCards"></section>
+        <section class="alert-section" id="alertSection"></section>
+        <section class="table-section">
+          <div class="section-header">
+            <h3 class="section-title">在庫状況（概要）</h3>
+          </div>
+          <div class="table-wrap">
+            <table class="inventory-table">
+              <thead>
+                <tr>
+                  <th>教材名</th>
+                  <th>科目</th>
+                  <th>在庫数</th>
+                  <th>最低在庫</th>
+                  <th>状態</th>
+                </tr>
+              </thead>
+              <tbody id="dashboardTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
 
-      <!-- アラート -->
-      <section class="alert-section" id="alertSection"></section>
+      <!-- ========== 在庫一覧 ========== -->
+      <div class="page hidden" id="page-inventory">
+        <h2 class="page-title">在庫一覧</h2>
+        <section class="toolbar">
+          <div class="toolbar-left">
+            <input type="text" id="searchInput" class="search-input" placeholder="教材名で検索...">
+            <select id="subjectFilter" class="filter-select">
+              <option value="すべて">科目：すべて</option>
+              <option value="憲法">憲法</option>
+              <option value="民法">民法</option>
+              <option value="刑法">刑法</option>
+              <option value="行政法">行政法</option>
+              <option value="商法">商法</option>
+              <option value="民訴">民訴</option>
+              <option value="刑訴">刑訴</option>
+              <option value="共通">共通</option>
+            </select>
+            <select id="stockFilter" class="filter-select">
+              <option value="all">在庫状況：すべて</option>
+              <option value="low">在庫少</option>
+              <option value="out">在庫切れ</option>
+              <option value="ok">在庫十分</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" id="addNewBtn">+ 新規教材登録</button>
+        </section>
+        <section class="table-section">
+          <p class="result-count" id="resultCount"></p>
+          <div class="table-wrap">
+            <table class="inventory-table">
+              <thead>
+                <tr>
+                  <th class="sortable" data-sort="name">教材名</th>
+                  <th>科目</th>
+                  <th class="sortable" data-sort="stock">在庫数</th>
+                  <th>最低在庫</th>
+                  <th>単価</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="inventoryBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
 
-      <!-- ツールバー：検索・フィルター・新規追加 -->
-      <section class="toolbar">
-        <div class="toolbar-left">
-          <input type="text" id="searchInput" class="search-input" placeholder="教材名で検索...">
-          <select id="subjectFilter" class="filter-select">
-            <option value="すべて">科目：すべて</option>
-            <option value="憲法">憲法</option>
-            <option value="民法">民法</option>
-            <option value="刑法">刑法</option>
-            <option value="行政法">行政法</option>
-            <option value="商法">商法</option>
-            <option value="民訴">民訴</option>
-            <option value="刑訴">刑訴</option>
-            <option value="共通">共通</option>
-          </select>
-          <select id="stockFilter" class="filter-select">
-            <option value="all">在庫状況：すべて</option>
-            <option value="low">在庫少</option>
-            <option value="out">在庫切れ</option>
-            <option value="ok">在庫十分</option>
-          </select>
-        </div>
-        <button class="btn btn-primary" id="addNewBtn">+ 新規教材登録</button>
-      </section>
+      <!-- ========== 発注アラート ========== -->
+      <div class="page hidden" id="page-alerts">
+        <h2 class="page-title">発注アラート</h2>
+        <div class="alert-summary-row" id="alertSummaryRow"></div>
+        <section class="table-section">
+          <div class="section-header">
+            <h3 class="section-title">在庫切れ教材</h3>
+          </div>
+          <div class="table-wrap">
+            <table class="inventory-table">
+              <thead>
+                <tr>
+                  <th>教材名</th>
+                  <th>科目</th>
+                  <th>在庫数</th>
+                  <th>最低在庫</th>
+                  <th>不足数</th>
+                  <th>備考</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="alertOutBody"></tbody>
+            </table>
+          </div>
+        </section>
+        <section class="table-section" style="margin-top:20px;">
+          <div class="section-header">
+            <h3 class="section-title">在庫少教材</h3>
+          </div>
+          <div class="table-wrap">
+            <table class="inventory-table">
+              <thead>
+                <tr>
+                  <th>教材名</th>
+                  <th>科目</th>
+                  <th>在庫数</th>
+                  <th>最低在庫</th>
+                  <th>不足数</th>
+                  <th>備考</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="alertLowBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
 
-      <!-- 在庫テーブル -->
-      <section class="table-section">
-        <p class="result-count" id="resultCount"></p>
-        <div class="table-wrap">
-          <table class="inventory-table">
-            <thead>
-              <tr>
-                <th class="sortable" data-sort="name">教材名</th>
-                <th>科目</th>
-                <th class="sortable" data-sort="stock">在庫数</th>
-                <th>最低在庫</th>
-                <th>操作</th>
-              </tr>
-            </thead>
-            <tbody id="inventoryBody"></tbody>
-          </table>
-        </div>
-      </section>
+      <!-- ========== 入出庫履歴 ========== -->
+      <div class="page hidden" id="page-history">
+        <h2 class="page-title">入出庫履歴</h2>
+        <section class="toolbar">
+          <div class="toolbar-left">
+            <select id="historyTypeFilter" class="filter-select">
+              <option value="all">種別：すべて</option>
+              <option value="in">入庫のみ</option>
+              <option value="out">出庫のみ</option>
+            </select>
+            <select id="historySubjectFilter" class="filter-select">
+              <option value="すべて">科目：すべて</option>
+              <option value="憲法">憲法</option>
+              <option value="民法">民法</option>
+              <option value="刑法">刑法</option>
+              <option value="行政法">行政法</option>
+              <option value="商法">商法</option>
+              <option value="民訴">民訴</option>
+              <option value="刑訴">刑訴</option>
+              <option value="共通">共通</option>
+            </select>
+          </div>
+        </section>
+        <section class="table-section">
+          <p class="result-count" id="historyCount"></p>
+          <div class="table-wrap">
+            <table class="inventory-table">
+              <thead>
+                <tr>
+                  <th>日時</th>
+                  <th>種別</th>
+                  <th>教材名</th>
+                  <th>科目</th>
+                  <th>数量</th>
+                  <th>変更後在庫</th>
+                  <th>担当者</th>
+                </tr>
+              </thead>
+              <tbody id="historyBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
     </main>
   </div>
 
