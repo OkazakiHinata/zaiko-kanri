@@ -5,8 +5,7 @@
 // ========== ログイン機能 ==========
 // ※簡易認証（クライアント側のみ）。本格運用にはサーバー側認証が必要です。
 const USERS = [
-  { id: "admin", password: "legal2026" },
-  { id: "staff", password: "staff2026" }
+  { id: "okazaki@kato-seminar.jp", password: "testtest2026" }
 ];
 
 const loginScreen   = document.getElementById('loginScreen');
