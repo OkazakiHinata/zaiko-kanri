@@ -369,18 +369,22 @@ function renderAlerts() {
 
 
 // ========== 入出庫履歴 ==========
-function renderHistory() {
-  let filtered = stockHistory.filter(entry => {
+function getFilteredHistory() {
+  return stockHistory.filter(entry => {
     const matchType = state.historyTypeFilter === "all" || entry.type === state.historyTypeFilter;
     const matchSubject = state.historySubjectFilter === "すべて" || entry.subject === state.historySubjectFilter;
     return matchType && matchSubject;
   });
+}
+
+function renderHistory() {
+  const filtered = getFilteredHistory();
 
   document.getElementById('historyCount').textContent = `${filtered.length} 件の履歴`;
 
   const body = document.getElementById('historyBody');
   if (filtered.length === 0) {
-    body.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:40px; color:var(--color-gray-400);">該当する履歴がありません</td></tr>`;
+    body.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:40px; color:var(--color-gray-400);">該当する履歴がありません</td></tr>`;
     return;
   }
 
@@ -392,10 +396,37 @@ function renderHistory() {
       <td>${entry.subject}</td>
       <td>${entry.type === 'in' ? '+' : '-'}${entry.amount}</td>
       <td>${entry.afterStock}</td>
-      <td>${entry.staff}</td>
     </tr>
   `).join('');
 }
+
+// CSVダウンロード
+document.getElementById('csvDownloadBtn').addEventListener('click', () => {
+  const filtered = getFilteredHistory();
+
+  // BOM付きUTF-8でExcelでも文字化けしない
+  const bom = '\uFEFF';
+  const header = '日時,種別,教材名,科目,数量,変更後在庫';
+  const rows = filtered.map(entry => {
+    const type = entry.type === 'in' ? '入庫' : '出庫';
+    const amount = (entry.type === 'in' ? '+' : '-') + entry.amount;
+    // カンマを含む可能性があるフィールドはダブルクォートで囲む
+    return `${entry.date},${type},"${entry.itemName}",${entry.subject},${amount},${entry.afterStock}`;
+  });
+
+  const csv = bom + header + '\n' + rows.join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  const today = new Date().toISOString().slice(0, 10);
+  a.download = `入出庫履歴_${today}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
 
 
 // ========== フィルター・検索 ==========
@@ -474,8 +505,7 @@ btnStockIn.addEventListener('click', () => {
     itemName: item.name,
     subject: item.subject,
     amount: amount,
-    afterStock: item.stock,
-    staff: "管理者"
+    afterStock: item.stock
   });
 
   closeStockModal();
@@ -498,8 +528,7 @@ btnStockOut.addEventListener('click', () => {
     itemName: item.name,
     subject: item.subject,
     amount: amount,
-    afterStock: item.stock,
-    staff: "管理者"
+    afterStock: item.stock
   });
 
   closeStockModal();
