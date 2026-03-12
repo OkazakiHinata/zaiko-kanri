@@ -3,7 +3,6 @@
 // ============================================================
 
 // ========== ログイン機能 ==========
-// ※簡易認証（クライアント側のみ）。本格運用にはサーバー側認証が必要です。
 const USERS = [
   { id: "okazaki@kato-seminar.jp", password: "testtest2026" }
 ];
@@ -14,7 +13,6 @@ const loginIdInput  = document.getElementById('loginId');
 const loginPwInput  = document.getElementById('loginPassword');
 const loginError    = document.getElementById('loginError');
 
-// ログイン済みか確認
 if (sessionStorage.getItem('loggedIn')) {
   loginScreen.classList.add('hidden');
   document.body.classList.remove('app-hidden');
@@ -51,20 +49,18 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
 // ========== 状態管理 ==========
 let state = {
   searchQuery: "",
-  categoryFilter: "すべて",
   subjectFilter: "すべて",
   stockFilter: "all",
   sortKey: null,
   sortAsc: true,
-  editingId: null,     // 編集中の教材ID（null=新規）
-  adjustingId: null,   // 入出庫操作中の教材ID
-  deletingId: null     // 削除対象の教材ID
+  editingId: null,
+  adjustingId: null,
+  deletingId: null
 };
 
 
 // ========== DOM要素 ==========
 const searchInput     = document.getElementById('searchInput');
-const categoryFilter  = document.getElementById('categoryFilter');
 const subjectFilter   = document.getElementById('subjectFilter');
 const stockFilter     = document.getElementById('stockFilter');
 const summaryCards    = document.getElementById('summaryCards');
@@ -95,12 +91,10 @@ const editForm         = document.getElementById('editForm');
 const editCancel       = document.getElementById('editCancel');
 const editSubmit       = document.getElementById('editSubmit');
 const formName         = document.getElementById('formName');
-const formCategory     = document.getElementById('formCategory');
 const formSubject      = document.getElementById('formSubject');
 const formStock        = document.getElementById('formStock');
 const formMinStock     = document.getElementById('formMinStock');
 const formPrice        = document.getElementById('formPrice');
-const formLocation     = document.getElementById('formLocation');
 const formNote         = document.getElementById('formNote');
 
 // 削除モーダル
@@ -131,28 +125,28 @@ function renderSummary() {
 
   summaryCards.innerHTML = `
     <div class="summary-card">
-      <div class="summary-icon blue">📦</div>
+      <div class="summary-icon blue"></div>
       <div class="summary-info">
         <span class="summary-label">登録教材数</span>
         <span class="summary-value">${totalItems}</span>
       </div>
     </div>
     <div class="summary-card">
-      <div class="summary-icon green">📚</div>
+      <div class="summary-icon green"></div>
       <div class="summary-info">
         <span class="summary-label">総在庫数</span>
         <span class="summary-value">${totalStock.toLocaleString()}</span>
       </div>
     </div>
     <div class="summary-card">
-      <div class="summary-icon orange">⚠️</div>
+      <div class="summary-icon orange"></div>
       <div class="summary-info">
         <span class="summary-label">在庫少</span>
         <span class="summary-value">${lowStockItems}</span>
       </div>
     </div>
     <div class="summary-card">
-      <div class="summary-icon red">🚫</div>
+      <div class="summary-icon red"></div>
       <div class="summary-info">
         <span class="summary-label">在庫切れ</span>
         <span class="summary-value">${outOfStockItems}</span>
@@ -172,7 +166,6 @@ function renderAlerts() {
   outOfStock.forEach(item => {
     html += `
       <div class="alert-bar danger">
-        <span class="alert-icon">🚫</span>
         <span class="alert-text"><strong>${item.name}</strong> が在庫切れです${item.note ? '（' + item.note + '）' : ''}</span>
         <button class="alert-action" onclick="openStockModal(${item.id})">入庫する</button>
       </div>
@@ -182,7 +175,6 @@ function renderAlerts() {
   lowStock.forEach(item => {
     html += `
       <div class="alert-bar warning">
-        <span class="alert-icon">⚠️</span>
         <span class="alert-text"><strong>${item.name}</strong> の在庫が残り ${item.stock} 個です（最低: ${item.minStock}）</span>
         <button class="alert-action" onclick="openStockModal(${item.id})">入庫する</button>
       </div>
@@ -197,7 +189,6 @@ function renderAlerts() {
 function renderTable() {
   let filtered = inventory.filter(item => {
     const matchSearch = item.name.toLowerCase().includes(state.searchQuery.toLowerCase());
-    const matchCategory = state.categoryFilter === "すべて" || item.category === state.categoryFilter;
     const matchSubject = state.subjectFilter === "すべて" || item.subject === state.subjectFilter;
 
     let matchStock = true;
@@ -209,7 +200,7 @@ function renderTable() {
       matchStock = item.stock >= item.minStock;
     }
 
-    return matchSearch && matchCategory && matchSubject && matchStock;
+    return matchSearch && matchSubject && matchStock;
   });
 
   // ソート
@@ -230,7 +221,7 @@ function renderTable() {
   if (filtered.length === 0) {
     inventoryBody.innerHTML = `
       <tr>
-        <td colspan="8" style="text-align:center; padding:40px; color:var(--color-gray-400);">
+        <td colspan="5" style="text-align:center; padding:40px; color:var(--color-gray-400);">
           該当する教材がありません
         </td>
       </tr>
@@ -239,7 +230,6 @@ function renderTable() {
   }
 
   inventoryBody.innerHTML = filtered.map(item => {
-    // 在庫状態の判定
     let stockClass = 'stock-ok';
     let numberClass = '';
     if (item.stock === 0) {
@@ -256,7 +246,6 @@ function renderTable() {
           <div class="item-name">${item.name}</div>
           ${item.note ? `<div class="item-note">${item.note}</div>` : ''}
         </td>
-        <td><span class="category-badge cat-${item.category}">${item.category}</span></td>
         <td>${item.subject}</td>
         <td>
           <div class="stock-cell">
@@ -265,13 +254,11 @@ function renderTable() {
           </div>
         </td>
         <td>${item.minStock}</td>
-        <td>${item.location}</td>
-        <td>${item.lastRestocked}</td>
         <td>
           <div class="actions-cell">
-            <button class="btn-icon" title="入出庫" onclick="openStockModal(${item.id})">📦</button>
-            <button class="btn-icon" title="編集" onclick="openEditModal(${item.id})">✏️</button>
-            <button class="btn-icon" title="削除" onclick="openDeleteModal(${item.id})">🗑️</button>
+            <button class="btn-action btn-action-stock" title="入出庫" onclick="openStockModal(${item.id})">入出庫</button>
+            <button class="btn-action btn-action-edit" title="編集" onclick="openEditModal(${item.id})">編集</button>
+            <button class="btn-action btn-action-delete" title="削除" onclick="openDeleteModal(${item.id})">削除</button>
           </div>
         </td>
       </tr>
@@ -283,11 +270,6 @@ function renderTable() {
 // ========== フィルター・検索 ==========
 searchInput.addEventListener('input', (e) => {
   state.searchQuery = e.target.value;
-  renderTable();
-});
-
-categoryFilter.addEventListener('change', (e) => {
-  state.categoryFilter = e.target.value;
   renderTable();
 });
 
@@ -344,7 +326,6 @@ btnStockIn.addEventListener('click', () => {
   if (amount <= 0) return;
 
   item.stock += amount;
-  item.lastRestocked = new Date().toISOString().slice(0, 10);
 
   closeStockModal();
   refreshAll();
@@ -382,20 +363,16 @@ addNewBtn.addEventListener('click', () => openEditModal(null));
 
 function openEditModal(id) {
   if (id === null) {
-    // 新規登録
     state.editingId = null;
     editModalTitle.textContent = '新規教材登録';
     editSubmit.textContent = '登録';
     formName.value = '';
-    formCategory.value = 'テキスト';
     formSubject.value = '憲法';
     formStock.value = 0;
     formMinStock.value = 10;
     formPrice.value = 0;
-    formLocation.value = '';
     formNote.value = '';
   } else {
-    // 編集
     const item = inventory.find(i => i.id === id);
     if (!item) return;
 
@@ -403,12 +380,10 @@ function openEditModal(id) {
     editModalTitle.textContent = '教材情報の編集';
     editSubmit.textContent = '更新';
     formName.value = item.name;
-    formCategory.value = item.category;
     formSubject.value = item.subject;
     formStock.value = item.stock;
     formMinStock.value = item.minStock;
     formPrice.value = item.price;
-    formLocation.value = item.location;
     formNote.value = item.note;
   }
 
@@ -427,26 +402,21 @@ editForm.addEventListener('submit', (e) => {
 
   const data = {
     name: formName.value.trim(),
-    category: formCategory.value,
     subject: formSubject.value,
     stock: parseInt(formStock.value) || 0,
     minStock: parseInt(formMinStock.value) || 0,
     price: parseInt(formPrice.value) || 0,
-    location: formLocation.value.trim(),
     note: formNote.value.trim()
   };
 
   if (!data.name) return;
 
   if (state.editingId === null) {
-    // 新規追加
     inventory.push({
       id: nextId++,
-      ...data,
-      lastRestocked: new Date().toISOString().slice(0, 10)
+      ...data
     });
   } else {
-    // 更新
     const item = inventory.find(i => i.id === state.editingId);
     if (!item) return;
     Object.assign(item, data);
@@ -500,7 +470,6 @@ function refreshAll() {
   renderTable();
 }
 
-// Escキーでモーダルを閉じる
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     closeStockModal();
