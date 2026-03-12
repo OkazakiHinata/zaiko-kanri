@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>教材在庫管理 - Legal Academy</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- ヘッダー -->
+  <header class="header">
+    <div class="header-inner">
+      <h1 class="logo">⚖️ Legal Academy <span class="logo-sub">教材在庫管理</span></h1>
+      <span class="header-user">管理者</span>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- サイドバー -->
+    <aside class="sidebar">
+      <nav class="sidebar-nav">
+        <a class="sidebar-link active">📊 ダッシュボード</a>
+        <a class="sidebar-link">📦 在庫一覧</a>
+        <a class="sidebar-link">⚠️ 発注アラート</a>
+        <a class="sidebar-link">📝 入出庫履歴</a>
+      </nav>
+    </aside>
+
+    <!-- メインコンテンツ -->
+    <main class="main">
+
+      <!-- ダッシュボード：サマリーカード -->
+      <section class="summary-cards" id="summaryCards">
+        <!-- JSが動的に生成 -->
+      </section>
+
+      <!-- アラート -->
+      <section class="alert-section" id="alertSection">
+        <!-- JSが在庫不足アラートを生成 -->
+      </section>
+
+      <!-- ツールバー：検索・フィルター・新規追加 -->
+      <section class="toolbar">
+        <div class="toolbar-left">
+          <input type="text" id="searchInput" class="search-input" placeholder="教材名で検索...">
+          <select id="categoryFilter" class="filter-select">
+            <option value="すべて">カテゴリー：すべて</option>
+            <option value="テキスト">テキスト</option>
+            <option value="問題集">問題集</option>
+            <option value="レジュメ">レジュメ</option>
+            <option value="模試">模試</option>
+            <option value="消耗品">消耗品</option>
+          </select>
+          <select id="subjectFilter" class="filter-select">
+            <option value="すべて">科目：すべて</option>
+            <option value="憲法">憲法</option>
+            <option value="民法">民法</option>
+            <option value="刑法">刑法</option>
+            <option value="行政法">行政法</option>
+            <option value="商法">商法</option>
+            <option value="民訴">民訴</option>
+            <option value="刑訴">刑訴</option>
+            <option value="共通">共通</option>
+          </select>
+          <select id="stockFilter" class="filter-select">
+            <option value="all">在庫状況：すべて</option>
+            <option value="low">在庫少</option>
+            <option value="out">在庫切れ</option>
+            <option value="ok">在庫十分</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" id="addNewBtn">＋ 新規教材登録</button>
+      </section>
+
+      <!-- 在庫テーブル -->
+      <section class="table-section">
+        <p class="result-count" id="resultCount"></p>
+        <div class="table-wrap">
+          <table class="inventory-table">
+            <thead>
+              <tr>
+                <th class="sortable" data-sort="name">教材名</th>
+                <th>カテゴリー</th>
+                <th>科目</th>
+                <th class="sortable" data-sort="stock">在庫数</th>
+                <th>最低在庫</th>
+                <th>保管場所</th>
+                <th>最終入庫日</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="inventoryBody">
+              <!-- JSが行を生成 -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- 入出庫モーダル -->
+  <div class="modal-overlay" id="stockModalOverlay"></div>
+  <div class="modal" id="stockModal">
+    <div class="modal-header">
+      <h3 id="stockModalTitle">入出庫</h3>
+      <button class="modal-close" id="stockModalClose">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-item-name" id="stockItemName"></p>
+      <div class="stock-adjust">
+        <label>現在の在庫: <strong id="stockCurrent">0</strong></label>
+        <div class="adjust-controls">
+          <button class="adjust-btn minus" id="adjustMinus">−</button>
+          <input type="number" id="adjustAmount" class="adjust-input" value="1" min="1">
+          <button class="adjust-btn plus" id="adjustPlus">＋</button>
+        </div>
+        <div class="adjust-actions">
+          <button class="btn btn-success" id="btnStockIn">入庫</button>
+          <button class="btn btn-danger" id="btnStockOut">出庫</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 新規登録 / 編集モーダル -->
+  <div class="modal-overlay" id="editModalOverlay"></div>
+  <div class="modal modal-wide" id="editModal">
+    <div class="modal-header">
+      <h3 id="editModalTitle">新規教材登録</h3>
+      <button class="modal-close" id="editModalClose">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="editForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="formName">教材名 <span class="required">*</span></label>
+            <input type="text" id="formName" required>
+          </div>
+        </div>
+        <div class="form-row two-col">
+          <div class="form-group">
+            <label for="formCategory">カテゴリー</label>
+            <select id="formCategory">
+              <option value="テキスト">テキスト</option>
+              <option value="問題集">問題集</option>
+              <option value="レジュメ">レジュメ</option>
+              <option value="模試">模試</option>
+              <option value="消耗品">消耗品</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="formSubject">科目</label>
+            <select id="formSubject">
+              <option value="憲法">憲法</option>
+              <option value="民法">民法</option>
+              <option value="刑法">刑法</option>
+              <option value="行政法">行政法</option>
+              <option value="商法">商法</option>
+              <option value="民訴">民訴</option>
+              <option value="刑訴">刑訴</option>
+              <option value="共通">共通</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row three-col">
+          <div class="form-group">
+            <label for="formStock">初期在庫数</label>
+            <input type="number" id="formStock" value="0" min="0">
+          </div>
+          <div class="form-group">
+            <label for="formMinStock">最低在庫数</label>
+            <input type="number" id="formMinStock" value="10" min="0">
+          </div>
+          <div class="form-group">
+            <label for="formPrice">単価（税込）</label>
+            <input type="number" id="formPrice" value="0" min="0">
+          </div>
+        </div>
+        <div class="form-row two-col">
+          <div class="form-group">
+            <label for="formLocation">保管場所</label>
+            <input type="text" id="formLocation" placeholder="例：棚A-1">
+          </div>
+          <div class="form-group">
+            <label for="formNote">備考</label>
+            <input type="text" id="formNote" placeholder="自由メモ">
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" id="editCancel">キャンセル</button>
+          <button type="submit" class="btn btn-primary" id="editSubmit">登録</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 削除確認モーダル -->
+  <div class="modal-overlay" id="deleteModalOverlay"></div>
+  <div class="modal modal-small" id="deleteModal">
+    <div class="modal-header">
+      <h3>教材の削除</h3>
+      <button class="modal-close" id="deleteModalClose">✕</button>
+    </div>
+    <div class="modal-body">
+      <p>以下の教材を削除しますか？</p>
+      <p class="delete-target" id="deleteTargetName"></p>
+      <p class="delete-warning">この操作は取り消せません。</p>
+      <div class="form-actions">
+        <button class="btn btn-secondary" id="deleteCancelBtn">キャンセル</button>
+        <button class="btn btn-danger" id="deleteConfirmBtn">削除する</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
