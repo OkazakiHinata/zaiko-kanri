@@ -2,6 +2,53 @@
 // app.js - 教材在庫管理システムのロジック
 // ============================================================
 
+// ========== ログイン機能 ==========
+// ※簡易認証（クライアント側のみ）。本格運用にはサーバー側認証が必要です。
+const USERS = [
+  { id: "admin", password: "legal2026" },
+  { id: "staff", password: "staff2026" }
+];
+
+const loginScreen   = document.getElementById('loginScreen');
+const loginForm     = document.getElementById('loginForm');
+const loginIdInput  = document.getElementById('loginId');
+const loginPwInput  = document.getElementById('loginPassword');
+const loginError    = document.getElementById('loginError');
+
+// ログイン済みか確認
+if (sessionStorage.getItem('loggedIn')) {
+  loginScreen.classList.add('hidden');
+  document.body.classList.remove('app-hidden');
+} else {
+  document.body.classList.add('app-hidden');
+}
+
+loginForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const id = loginIdInput.value.trim();
+  const pw = loginPwInput.value;
+
+  const user = USERS.find(u => u.id === id && u.password === pw);
+  if (user) {
+    sessionStorage.setItem('loggedIn', 'true');
+    loginScreen.classList.add('hidden');
+    document.body.classList.remove('app-hidden');
+    loginError.textContent = '';
+  } else {
+    loginError.textContent = 'IDまたはパスワードが正しくありません';
+    loginPwInput.value = '';
+    loginPwInput.focus();
+  }
+});
+
+
+// ========== ログアウト ==========
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  sessionStorage.removeItem('loggedIn');
+  location.reload();
+});
+
+
 // ========== 状態管理 ==========
 let state = {
   searchQuery: "",

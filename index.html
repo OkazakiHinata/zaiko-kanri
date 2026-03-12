@@ -7,11 +7,35 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- ログイン画面 -->
+  <div class="login-screen" id="loginScreen">
+    <div class="login-card">
+      <div class="login-logo">⚖️</div>
+      <h2 class="login-title">Legal Academy</h2>
+      <p class="login-subtitle">教材在庫管理システム</p>
+      <form id="loginForm">
+        <div class="login-field">
+          <label for="loginId">ログインID</label>
+          <input type="text" id="loginId" placeholder="IDを入力" required>
+        </div>
+        <div class="login-field">
+          <label for="loginPassword">パスワード</label>
+          <input type="password" id="loginPassword" placeholder="パスワードを入力" required>
+        </div>
+        <p class="login-error" id="loginError"></p>
+        <button type="submit" class="login-btn">ログイン</button>
+      </form>
+    </div>
+  </div>
+
   <!-- ヘッダー -->
   <header class="header">
     <div class="header-inner">
       <h1 class="logo">⚖️ Legal Academy <span class="logo-sub">教材在庫管理</span></h1>
-      <span class="header-user">管理者</span>
+      <div class="header-right">
+        <span class="header-user">管理者</span>
+        <button class="logout-btn" id="logoutBtn">ログアウト</button>
+      </div>
     </div>
   </header>
 
